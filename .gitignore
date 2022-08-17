@@ -5,6 +5,7 @@ htmlcov
 MANIFEST
 dist/
 *.pyc
+*.pyd
 build/*
 zigzag/*.so
 zigzag/*.html

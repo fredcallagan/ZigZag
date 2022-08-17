@@ -111,6 +111,8 @@ cpdef peak_valley_pivots_detailed(double [:] X,
         double x, r
 
     pivots[0] = initial_pivot
+    pivots_prices = []
+    pivots_time_markers = []
 
     # Adding one to the relative change thresholds saves operations. Instead
     # of computing relative change at each point as x_j / x_i - 1, it is
@@ -126,6 +128,8 @@ cpdef peak_valley_pivots_detailed(double [:] X,
         if trend == -1:
             if r >= up_thresh:
                 pivots[last_pivot_t] = trend
+                pivots_time_markers.append(t_n)
+                pivots_prices.append(x)
                 trend = PEAK
                 last_pivot_x = x
                 last_pivot_t = t
@@ -135,6 +139,8 @@ cpdef peak_valley_pivots_detailed(double [:] X,
         else:
             if r <= down_thresh:
                 pivots[last_pivot_t] = trend
+                pivots_time_markers.append(t_n)
+                pivots_prices.append(x)
                 trend = VALLEY
                 last_pivot_x = x
                 last_pivot_t = t
@@ -145,7 +151,7 @@ cpdef peak_valley_pivots_detailed(double [:] X,
 
     if limit_to_finalized_segments:
         if use_eager_switching_for_non_final:
-            if last_pivot_t > 0 and last_pivot_t < t_n-1:
+            if 0 < last_pivot_t < t_n-1:
                 pivots[last_pivot_t] = trend
                 pivots[t_n-1] = -trend
             else:
@@ -156,7 +162,11 @@ cpdef peak_valley_pivots_detailed(double [:] X,
             elif pivots[t_n-1] == 0:
                 pivots[t_n-1] = -trend
 
-    return pivots
+    return {
+            "pivots": pivots,
+            "time_markers": pivots_time_markers,
+            "prices": pivots_prices
+    }
 
 
 def max_drawdown(X) -> float:

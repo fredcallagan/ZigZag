@@ -63,7 +63,7 @@ class TestPeakValleyPivots(TestCase):
         expected_result = np.zeros_like(data)
         expected_result[0], expected_result[-1] = VALLEY, PEAK
 
-        assert_array_equal(result, expected_result)
+        assert_array_equal(result['pivots'], expected_result)
 
     def test_strictly_increasing_but_less_than_threshold(self):
         data = np.linspace(1.0, 1.05, 10)
@@ -72,7 +72,7 @@ class TestPeakValleyPivots(TestCase):
         expected_result[0], expected_result[-1] = VALLEY, PEAK
 
         self.assertTrue(data[0] < data[len(data)-1])
-        assert_array_equal(result, expected_result)
+        assert_array_equal(result['pivots'], expected_result)
 
     def test_strictly_decreasing(self):
         data = np.linspace(10, 0, 10)
@@ -80,7 +80,7 @@ class TestPeakValleyPivots(TestCase):
         expected_result = np.zeros_like(data)
         expected_result[0], expected_result[-1] = PEAK, VALLEY
 
-        assert_array_equal(result, expected_result)
+        assert_array_equal(result['pivots'], expected_result)
 
     def test_strictly_decreasing_but_less_than_threshold(self):
         data = np.linspace(1.05, 1.0, 10)
@@ -88,54 +88,54 @@ class TestPeakValleyPivots(TestCase):
         expected_result = np.zeros_like(data)
         expected_result[0], expected_result[-1] = PEAK, VALLEY
 
-        assert_array_equal(result, expected_result)
+        assert_array_equal(result['pivots'], expected_result)
 
     def test_single_peaked(self):
         data = np.array([1.0, 1.2, 1.05])
         result = zigzag.peak_valley_pivots(data, 0.1, -0.1)
         expected_result = np.array([VALLEY, PEAK, VALLEY])
 
-        assert_array_equal(result, expected_result)
+        assert_array_equal(result['pivots'], expected_result)
 
     def test_single_valleyed(self):
         data = np.array([1.0, 0.9, 1.2])
         result = zigzag.peak_valley_pivots(data, 0.1, -0.1)
         expected_result = np.array([PEAK, VALLEY, PEAK])
 
-        assert_array_equal(result, expected_result)
+        assert_array_equal(result['pivots'], expected_result)
 
     def test_increasing_kinked(self):
         data = np.array([1.0, 0.99, 1.1])
         result = zigzag.peak_valley_pivots(data, 0.1, -0.1)
         expected_result = np.array([PEAK, VALLEY, PEAK])
 
-        assert_array_equal(result, expected_result)
+        assert_array_equal(result['pivots'], expected_result)
 
     def test_decreasing_kinked(self):
         data = np.array([1.0, 1.01, 0.9])
         result = zigzag.peak_valley_pivots(data, 0.1, -0.1)
         expected_result = np.array([VALLEY, PEAK, VALLEY])
 
-        assert_array_equal(result, expected_result)
+        assert_array_equal(result['pivots'], expected_result)
 
 
 class TestSegmentReturn(TestCase):
     def test_strictly_increasing(self):
         data = np.linspace(1.0, 100.0, 10)
         pivots = zigzag.peak_valley_pivots(data, 0.1, -0.1)
-        assert_array_almost_equal(zigzag.compute_segment_returns(data, pivots),
+        assert_array_almost_equal(zigzag.compute_segment_returns(data, pivots['pivots']),
                                   np.array([99.0]))
 
     def test_strictly_decreasing(self):
         data = np.linspace(100.0, 1.0, 10)
         pivots = zigzag.peak_valley_pivots(data, 0.1, -0.1)
-        assert_array_almost_equal(zigzag.compute_segment_returns(data, pivots),
+        assert_array_almost_equal(zigzag.compute_segment_returns(data, pivots['pivots']),
                                   np.array([-0.99]))
 
     def test_rise_fall_rise(self):
         data = np.array([1.0, 1.05, 1.1, 1.0, 0.9, 1.5])
         pivots = zigzag.peak_valley_pivots(data, 0.1, -0.1)
-        assert_array_almost_equal(zigzag.compute_segment_returns(data, pivots),
+        assert_array_almost_equal(zigzag.compute_segment_returns(data, pivots['pivots']),
                                   np.array([0.1, -0.181818, 0.6666666]))
 
 
@@ -165,4 +165,4 @@ class TestPivotsToModes(TestCase):
 def test_peak_valley_pivots_pandas_compat():
     df = pd.DataFrame({'X': np.array([1, 2, 3, 4])})
     got = zigzag.peak_valley_pivots(df.X, 0.2, -0.2)
-    assert (got == np.array([-1, 0, 0, 1])).all()
+    assert (got['pivots'] == np.array([-1, 0, 0, 1])).all()
